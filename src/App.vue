@@ -5,17 +5,19 @@
       <router-view></router-view>
     </main>
     <Footer />
+
+    <ToastNotification />
   </div>
 </template>
 
 <script setup>
-import Header from './components/Header.vue';
-import Footer from './components/Footer.vue';
+import Header from "./components/Header.vue";
+import Footer from "./components/Footer.vue";
+import ToastNotification from "./components/ToastNotification.vue";
 </script>
 
 <style>
-/* CSS Reset cơ bản */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 </style>

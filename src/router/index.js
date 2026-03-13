@@ -37,6 +37,11 @@ const routes = [
     component: () => import("../views/Wishlist.vue"),
     meta: { requiresAuth: true },
   },
+  {
+    path: "/compare",
+    name: "Compare",
+    component: () => import("../views/Compare.vue"),
+  },
 
   // Admin Routes
   {
@@ -64,7 +69,6 @@ const router = createRouter({
   routes,
 });
 
-// Route Guard
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
