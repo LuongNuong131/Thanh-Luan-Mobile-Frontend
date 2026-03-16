@@ -64,13 +64,13 @@
                       </div>
                     </td>
                     <td class="text-danger fw-bold">
-                      {{ formatPrice(product.price) }}
+                      {{ formatPrice(product.discountPrice || product.price) }}
                     </td>
                     <td>
                       <span
                         class="badge"
                         :class="
-                          product.stockQuantity > 5 ? 'bg-success' : 'bg-danger'
+                          product.stockQuantity > 0 ? 'bg-success' : 'bg-danger'
                         "
                       >
                         {{ product.stockQuantity }}
@@ -102,7 +102,9 @@
 
     <div v-if="showModal" class="modal-backdrop fade show"></div>
     <div v-if="showModal" class="modal d-block" tabindex="-1">
-      <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+      >
         <div class="modal-content border-0 shadow">
           <div class="modal-header bg-light">
             <h5 class="modal-title fw-bold">
@@ -117,8 +119,49 @@
           <div class="modal-body p-4">
             <form @submit.prevent="saveProduct">
               <div class="row">
-                <div class="col-md-12 mb-3">
-                  <label class="form-label">Tên iPhone</label>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label text-primary fw-bold"
+                    ><i class="bi bi-image me-1"></i>Chọn Ảnh Chính</label
+                  >
+                  <input
+                    type="file"
+                    class="form-control"
+                    @change="handleMainImageChange"
+                    accept="image/*"
+                  />
+                  <div v-if="formData.image" class="mt-2">
+                    <img
+                      :src="formData.image"
+                      class="img-thumbnail"
+                      style="height: 100px"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label text-primary fw-bold"
+                    ><i class="bi bi-images me-1"></i>Chọn Ảnh Phụ (Nhiều
+                    ảnh)</label
+                  >
+                  <input
+                    type="file"
+                    class="form-control"
+                    @change="handleGalleryChange"
+                    accept="image/*"
+                    multiple
+                  />
+                  <div class="d-flex gap-2 mt-2 overflow-auto">
+                    <img
+                      v-for="(img, idx) in formData.gallery"
+                      :key="idx"
+                      :src="img"
+                      class="img-thumbnail"
+                      style="height: 60px"
+                    />
+                  </div>
+                </div>
+
+                <div class="col-md-12 mb-3 mt-2 border-top pt-3">
+                  <label class="form-label fw-bold">Tên iPhone</label>
                   <input
                     type="text"
                     class="form-control"
@@ -126,8 +169,8 @@
                     required
                   />
                 </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Giá bán (VNĐ)</label>
+                <div class="col-md-4 mb-3">
+                  <label class="form-label">Giá gốc (VNĐ)</label>
                   <input
                     type="number"
                     class="form-control"
@@ -135,8 +178,18 @@
                     required
                   />
                 </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Số lượng tồn kho</label>
+                <div class="col-md-4 mb-3">
+                  <label class="form-label text-danger fw-bold"
+                    >Giá Khuyến Mãi (VNĐ)</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control"
+                    v-model="formData.discountPrice"
+                  />
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="form-label">Số lượng kho</label>
                   <input
                     type="number"
                     class="form-control"
@@ -144,7 +197,8 @@
                     required
                   />
                 </div>
-                <div class="col-md-4 mb-3">
+
+                <div class="col-md-3 mb-3">
                   <label class="form-label">Dung lượng</label>
                   <select class="form-select" v-model="formData.storage">
                     <option>64GB</option>
@@ -154,24 +208,52 @@
                     <option>1TB</option>
                   </select>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-3 mb-3">
                   <label class="form-label">Màu sắc</label>
                   <input
                     type="text"
                     class="form-control"
                     v-model="formData.color"
-                    placeholder="VD: Titan Tự nhiên"
+                    placeholder="VD: Titan"
                   />
                 </div>
-                <div class="col-md-4 mb-3">
-                  <label class="form-label">Tình trạng</label>
+                <div class="col-md-3 mb-3">
+                  <label class="form-label">Tình trạng pin</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="formData.batteryHealth"
+                    placeholder="VD: Pin 99%"
+                  />
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label class="form-label">Ngoại hình</label>
                   <input
                     type="text"
                     class="form-control"
                     v-model="formData.conditionType"
-                    placeholder="VD: Mới 100% Nguyên Seal"
+                    placeholder="VD: Đẹp 99%"
                   />
                 </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Phụ kiện đi kèm</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="formData.accessories"
+                    placeholder="VD: Cáp, sạc, ốp lưng"
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Bảo hành (Tháng)</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    v-model="formData.warrantyMonths"
+                  />
+                </div>
+
                 <div class="col-12 mb-3">
                   <label class="form-label">Mô tả chi tiết</label>
                   <textarea
@@ -181,7 +263,7 @@
                   ></textarea>
                 </div>
               </div>
-              <div class="text-end mt-3">
+              <div class="text-end mt-3 border-top pt-3">
                 <button
                   type="button"
                   class="btn btn-secondary me-2"
@@ -194,6 +276,10 @@
                   class="btn btn-primary fw-bold"
                   :disabled="loading"
                 >
+                  <span
+                    v-if="loading"
+                    class="spinner-border spinner-border-sm me-2"
+                  ></span>
                   Lưu Sản Phẩm
                 </button>
               </div>
@@ -214,22 +300,29 @@ const showModal = ref(false);
 const editingProduct = ref(null);
 const loading = ref(false);
 
+const mainImageFile = ref(null);
+const galleryFiles = ref([]);
+
 const formData = ref({
   name: "",
   price: 0,
+  discountPrice: 0,
   stockQuantity: 0,
   storage: "128GB",
   color: "",
   conditionType: "",
   description: "",
+  image: "",
+  gallery: [],
+  batteryHealth: "",
+  accessories: "",
+  warrantyMonths: 12,
 });
 
-const formatPrice = (price) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(price);
-};
+const formatPrice = (price) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    price,
+  );
 
 const fetchProducts = async () => {
   try {
@@ -240,11 +333,11 @@ const fetchProducts = async () => {
   }
 };
 
-onMounted(() => {
-  fetchProducts();
-});
+onMounted(() => fetchProducts());
 
 const openModal = (product) => {
+  mainImageFile.value = null;
+  galleryFiles.value = [];
   if (product) {
     editingProduct.value = product;
     formData.value = { ...product };
@@ -253,36 +346,76 @@ const openModal = (product) => {
     formData.value = {
       name: "",
       price: 0,
+      discountPrice: 0,
       stockQuantity: 0,
       storage: "128GB",
       color: "",
       conditionType: "",
       description: "",
+      image: "",
+      gallery: [],
+      batteryHealth: "",
+      accessories: "",
+      warrantyMonths: 12,
     };
   }
   showModal.value = true;
 };
 
-const closeModal = () => {
-  showModal.value = false;
+const closeModal = () => (showModal.value = false);
+
+const handleMainImageChange = (e) => {
+  if (e.target.files.length > 0) mainImageFile.value = e.target.files[0];
+};
+
+const handleGalleryChange = (e) => {
+  if (e.target.files.length > 0)
+    galleryFiles.value = Array.from(e.target.files);
+};
+
+// Hàm đẩy file lên Server
+const uploadFile = async (file) => {
+  const uploadData = new FormData();
+  uploadData.append("file", file);
+  const res = await api.post("/files/upload", uploadData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data.url;
 };
 
 const saveProduct = async () => {
   loading.value = true;
   try {
+    // 1. Upload ảnh chính nếu có file mới
+    if (mainImageFile.value) {
+      formData.value.image = await uploadFile(mainImageFile.value);
+    }
+
+    // 2. Upload danh sách ảnh phụ nếu có
+    if (galleryFiles.value.length > 0) {
+      const urls = [];
+      for (const file of galleryFiles.value) {
+        const url = await uploadFile(file);
+        urls.push(url);
+      }
+      formData.value.gallery = urls; // Cập nhật lại list ảnh mới
+    }
+
+    // 3. Lưu thông tin Product
+    const payload = { ...formData.value };
     if (editingProduct.value) {
       await api.put(
         `/admin/products/${editingProduct.value.productId}`,
-        formData.value,
+        payload,
       );
     } else {
-      await api.post("/admin/products", formData.value);
+      await api.post("/admin/products", payload);
     }
     await fetchProducts();
     closeModal();
-    alert("Thành công!");
+    alert("Lưu sản phẩm thành công!");
   } catch (error) {
-    alert("Lỗi khi lưu sản phẩm!");
+    alert("Lỗi khi lưu sản phẩm! " + (error.response?.data || error.message));
   } finally {
     loading.value = false;
   }

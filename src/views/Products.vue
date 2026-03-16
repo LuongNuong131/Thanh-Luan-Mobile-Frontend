@@ -84,15 +84,31 @@
             class="badge bg-danger position-absolute top-0 start-0 m-2 z-1"
             >Sale</span
           >
-          <img
-            :src="
-              product.image || 'https://via.placeholder.com/300x300?text=iPhone'
-            "
-            class="card-img-top p-4 bg-light"
-            alt="iPhone"
-          />
+
+          <router-link
+            :to="`/product/${product.productId}`"
+            class="d-block text-center"
+          >
+            <img
+              :src="
+                product.image ||
+                'https://via.placeholder.com/300x300?text=iPhone'
+              "
+              class="card-img-top p-4 bg-light"
+              alt="iPhone"
+            />
+          </router-link>
+
           <div class="card-body text-center d-flex flex-column">
-            <h5 class="card-title fw-bold text-truncate">{{ product.name }}</h5>
+            <router-link
+              :to="`/product/${product.productId}`"
+              class="text-decoration-none text-dark"
+            >
+              <h5 class="card-title fw-bold text-truncate">
+                {{ product.name }}
+              </h5>
+            </router-link>
+
             <p class="text-muted small mb-3">
               {{ product.storage || "128GB" }} | {{ product.color || "Titan" }}
             </p>
@@ -108,8 +124,10 @@
               <button
                 class="btn btn-primary w-100 fw-bold shadow-sm"
                 @click="addToCart(product)"
+                :disabled="product.stockQuantity === 0"
               >
-                <i class="bi bi-cart-plus me-1"></i> Thêm Giỏ Hàng
+                <i class="bi bi-cart-plus me-1"></i>
+                {{ product.stockQuantity === 0 ? "Hết Hàng" : "Thêm Giỏ Hàng" }}
               </button>
             </div>
           </div>
@@ -140,12 +158,10 @@ onMounted(() => {
   productStore.fetchProducts();
 });
 
-const formatPrice = (price) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(price || 0);
-};
+const formatPrice = (price) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+    price || 0,
+  );
 
 const resetFilters = () => {
   filters.value = { search: "", price: "all", storage: "all", sort: "newest" };
@@ -156,18 +172,13 @@ const addToCart = (product) => {
   toastStore.showToast(`Đã thêm ${product.name} vào giỏ hàng!`, "success");
 };
 
-// Logic Bộ lọc chuyên sâu & Ẩn máy đã bán
 const filteredProducts = computed(() => {
-  // LỌC ẨN CÁC MÁY ĐÃ BÁN (Chỉ lấy máy có stockQuantity > 0)
   let result = productStore.products.filter((p) => p.stockQuantity > 0);
 
-  // 1. Lọc theo từ khóa (Search)
   if (filters.value.search.trim()) {
     const keyword = filters.value.search.toLowerCase();
     result = result.filter((p) => p.name.toLowerCase().includes(keyword));
   }
-
-  // 2. Lọc theo mức giá
   if (filters.value.price !== "all") {
     result = result.filter((p) => {
       const activePrice = p.discountPrice || p.price;
@@ -178,13 +189,9 @@ const filteredProducts = computed(() => {
       return true;
     });
   }
-
-  // 3. Lọc theo dung lượng
   if (filters.value.storage !== "all") {
     result = result.filter((p) => p.storage === filters.value.storage);
   }
-
-  // 4. Sắp xếp (Sort)
   if (filters.value.sort === "priceAsc") {
     result.sort(
       (a, b) => (a.discountPrice || a.price) - (b.discountPrice || b.price),
@@ -194,7 +201,6 @@ const filteredProducts = computed(() => {
       (a, b) => (b.discountPrice || b.price) - (a.discountPrice || a.price),
     );
   } else {
-    // newest (Mới nhất - Dựa vào ID giảm dần)
     result.sort((a, b) => b.productId - a.productId);
   }
 
