@@ -177,14 +177,21 @@ const orderData = ref({
   address: "",
 });
 
-onMounted(() => {
+onMounted(async () => {
   if (cartStore.items.length === 0) {
     router.push("/cart");
     return;
   }
-  if (authStore.user) {
-    orderData.value.customerName = authStore.user.fullName || "";
-    orderData.value.email = authStore.user.email || "";
+
+  // Logic tự động điền thông tin khách hàng từ DB
+  if (authStore.isAuthenticated) {
+    await authStore.fetchProfile();
+    if (authStore.user) {
+      orderData.value.customerName = authStore.user.fullName || "";
+      orderData.value.phone = authStore.user.phoneNumber || "";
+      orderData.value.email = authStore.user.email || "";
+      orderData.value.address = authStore.user.address || "";
+    }
   }
 });
 
@@ -225,7 +232,6 @@ const submitOrder = async () => {
       })),
     };
 
-    // Gọi API OrderController
     await api.post("/orders/checkout", payload);
 
     toastStore.showToast(

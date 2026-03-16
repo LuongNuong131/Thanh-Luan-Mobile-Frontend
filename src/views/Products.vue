@@ -29,6 +29,7 @@
       <div class="col-lg-2 col-md-4 mb-3 mb-md-0">
         <select class="form-select" v-model="filters.storage">
           <option value="all">Mọi dung lượng</option>
+          <option value="64GB">64GB</option>
           <option value="128GB">128GB</option>
           <option value="256GB">256GB</option>
           <option value="512GB">512GB</option>
@@ -107,10 +108,8 @@
               <button
                 class="btn btn-primary w-100 fw-bold shadow-sm"
                 @click="addToCart(product)"
-                :disabled="product.stockQuantity === 0"
               >
-                <i class="bi bi-cart-plus me-1"></i>
-                {{ product.stockQuantity === 0 ? "Hết Hàng" : "Thêm Giỏ Hàng" }}
+                <i class="bi bi-cart-plus me-1"></i> Thêm Giỏ Hàng
               </button>
             </div>
           </div>
@@ -124,7 +123,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useProductStore } from "../store/productStore";
 import { useCartStore } from "../store/cartStore";
-import { useToastStore } from "../store/toastStore"; // Import Toast thay cho alert
+import { useToastStore } from "../store/toastStore";
 
 const productStore = useProductStore();
 const cartStore = useCartStore();
@@ -154,13 +153,13 @@ const resetFilters = () => {
 
 const addToCart = (product) => {
   cartStore.addToCart(product, 1);
-  // Dùng Toast thay vì alert
   toastStore.showToast(`Đã thêm ${product.name} vào giỏ hàng!`, "success");
 };
 
-// Logic Bộ lọc chuyên sâu
+// Logic Bộ lọc chuyên sâu & Ẩn máy đã bán
 const filteredProducts = computed(() => {
-  let result = [...productStore.products];
+  // LỌC ẨN CÁC MÁY ĐÃ BÁN (Chỉ lấy máy có stockQuantity > 0)
+  let result = productStore.products.filter((p) => p.stockQuantity > 0);
 
   // 1. Lọc theo từ khóa (Search)
   if (filters.value.search.trim()) {

@@ -62,6 +62,18 @@ const routes = [
     component: () => import("../views/AdminOrders.vue"),
     meta: { requiresAuth: true, requiresAdmin: true },
   },
+  {
+    path: "/profile",
+    name: "Profile",
+    component: () => import("../views/Profile.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/admin/users",
+    name: "AdminUsers",
+    component: () => import("../views/AdminUsers.vue"),
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
 ];
 
 const router = createRouter({
